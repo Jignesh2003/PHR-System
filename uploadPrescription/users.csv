@@ -1,0 +1,7 @@
+id,Name,Username,Password,confirmPassword,Role,Email
+1,Jignesh Rana,Jbr,123,123,Admin,jignesh.rana@gmail.com
+2,Vijay Chavan,VChavan,123,123,Pharmacist,vijay.chavan@gmail.com
+3,Abhay Samant,ABsawant,123,123,Doctor,abhay.samant@gmail.com
+4,Dr. Amar Yadav,AYadav,123,123,Doctor,amar@gmail.com
+5,Dr. Abhijeet Varankar,Abhijeet,123,123,Doctor,abhijeet@gmail.com
+6,Ankit Mishra,Ankit,123,123,Pharmacist,ankit@gmail.com
