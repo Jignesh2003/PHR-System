@@ -7,12 +7,26 @@ if(!isset($_SESSION['isLogin'])){
 if(isset($_SESSION['Role'])){
 
     if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Doctor' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'doctor'){
-        //if role is pharmacist then no access to uploadDocuments
-        header("Location: ./prescription.php");
+        if($_SESSION['Role']!='Nurse' && $_SESSION['Role']!='LabAssistant'){
+            //if role is pharmacist then no access to uploadDocuments
+            header("Location: ./prescription.php");
+        }
     }
     
-    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Pharmacist' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'pharmacist'){
+    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Pharmacist' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'pharmacist' && $_SESSION['Role']!='Nurse'){
         //if role is doctor then no access to uploadDocuments 
+        header("Location: ./index.php");
+        }
+
+    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Pharmacist' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'pharmacist' ){
+        if($_SESSION['Role']!= 'Doctor' && $_SESSION['Role']!= 'doctor' && $_SESSION['Role']!= 'Nurse'){
+                //if role is LabAssistant then no access to uploadDocuments 
+                header("Location: ./reports.php");
+            }
+        }
+
+    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Pharmacist' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'pharmacist' && $_SESSION['Role']!='Doctor' && $_SESSION['Role']!='doctor'){
+        //if role is Nurse then no access to uploadDocuments 
         header("Location: ./index.php");
         }
     
@@ -147,6 +161,7 @@ if(isset($_SESSION['Role'])){
                         $drName1 = $_POST['drName1'];
                         $situation1 = $_POST['Situation1'];
                         $drNameInGiveRights = $_POST['drName1'];
+                        $accessLocation1 = $_POST['accessLocation1'];
                         $filename = $_FILES["choosefile1"]["name"];
                         $tempfile = $_FILES["choosefile1"]["tmp_name"];
                         $folder = "uploadReports/".$filename;
@@ -167,25 +182,27 @@ if(isset($_SESSION['Role'])){
                         elseif($situation1=='MRI Report'){$documentPriority=1;}
                         else{$documentPriority=1;}
 
-                        $sql = "INSERT INTO reports(`DoctorName`,`Document`,`GiveRights`,`DocumentType`,`DocumentPriority`) VALUES ('$drName1','$filename','$drNameInGiveRights','$situation1',$documentPriority)";
+                        $sql = "INSERT INTO reports(`DoctorName`,`Document`, `GiveRights`,`DocumentType`,`DocumentPriority`) VALUES ('$drName1','$filename', '$drNameInGiveRights', '$situation1', $documentPriority)";
                         
-                        if($filename == "" || $drName1=""){
+                        if($filename == "" || $drName1 == ""){
                             echo"<div class='alert alert-danger alert-dismissible fade show' role='alert'>
                             <strong>Blank Not Allowed</strong>
                             <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-                          </div>";
+                            </div>";
                         }
                         else{
                             $result = mysqli_query($conn, $sql);
                             
                             //firing query to get the id of current data to use it as foreignkey in access table
-                            $sql2 = "SELECT * FROM reports WHERE id = LAST_INSERT_ID()";
+                            $sql2 = "SELECT * FROM reports ORDER BY id DESC LIMIT 1";
                             $result2 = mysqli_query($conn, $sql2);
-                            while($row = mysqli_fetch_assoc($result2)){
-                                $FK= $row['id'];
+
+                           while($row = mysqli_fetch_assoc($result2)){
+                            //echo "the row of result2 is ",$row['id'];    
+                            $FK= $row['id'];
                             }
                             
-                            $sql3 = "INSERT INTO access(`Document`, `lastAccessDate`, `lastAccessTime`, `accessCount`, `byWhichTable`, `foreignKey`) VALUES ('$filename', CURRENT_DATE, CURRENT_TIME, $documentCount, 'reports', $FK)";
+                            $sql3 = "INSERT INTO access(`Document`, `lastAccessDate`, `lastAccessTime`, `accessLocation`, `accessCount`, `byWhichTable`, `accessGrant`, `accessBy`, `situationId`,`situationType`) VALUES ('$filename', CURDATE(), CURTIME(), '$accessLocation1', $documentCount, 'reports', 'Default', $FK, 0,'$situation1')";
                             $result3 = mysqli_query($conn, $sql3);
                             
                             move_uploaded_file($tempfile, $folder);
@@ -193,7 +210,9 @@ if(isset($_SESSION['Role'])){
                             <strong>Document Uploaded Successfully</strong>
                             <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
                           </div>";
+
                         }
+                        
                     }
                 ?>
 
@@ -212,6 +231,8 @@ if(isset($_SESSION['Role'])){
                         <option value="MRI Report">MRI REPORT</option>
                         <option value="ECG">ECG</option>
                     </select>
+                    <br>
+                    <input type="text" class="form-control" placeholder="Enter Access Location" name="accessLocation1" aria-label=".form-control-lg example">
                     <br>
                     <input type="file" class="form-control" name="choosefile1">     
                     <div class="col-6 m-auto">
@@ -232,6 +253,7 @@ if(isset($_SESSION['Role'])){
                         $drName2= $_POST['drName2'];
                         $situation2 = $_POST['Situation2'];
                         $drNameInGiveRights = $_POST['drName2'];
+                        $accessLocation2 = $_POST['accessLocation2'];
                         $filename = $_FILES["choosefile2"]["name"];
                         $tempfile = $_FILES["choosefile2"]["tmp_name"];
                         $folder = "uploadPrescription/".$filename;
@@ -254,7 +276,7 @@ if(isset($_SESSION['Role'])){
                         $sql = "INSERT INTO prescription(`DoctorName`,`Document`, `GiveRights`,`DocumentType`,`DocumentPriority`) VALUES ('$drName2','$filename', '$drNameInGiveRights', '$situation2', $documentPriority)";
 
                         
-                        if($filename == "" || $drName2=""){
+                        if($filename == "" || $drName2==""){
                             echo"<div class='alert alert-danger alert-dismissible fade show' role='alert'>
                             <strong>Blank Not Allowed</strong>
                             <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
@@ -264,14 +286,15 @@ if(isset($_SESSION['Role'])){
                             $result = mysqli_query($conn, $sql);
 
                             //firing query to get the id of current data to use it as foreignkey in access table
-                            $sql2 = "SELECT * FROM reports WHERE id = LAST_INSERT_ID()";
+                            $sql2 = "SELECT * FROM prescription ORDER BY id DESC LIMIT 1";
                             $result2 = mysqli_query($conn, $sql2);
-                            while($row = mysqli_fetch_assoc($result2)){
+                            
+                           while($row= mysqli_fetch_assoc($result2)){
                                 $FK= $row['id'];
                             }
                             
-                            $sql3 = "INSERT INTO access(`Document`, `lastAccessDate`, `lastAccessTime`, `accessCount`, `byWhichTable`) VALUES ('$filename', CURRENT_DATE, CURRENT_TIME, $documentCount, 'prescription', $FK)";
-                            $result3 = mysqli_query($conn, $sql2);
+                            $sql3 = "INSERT INTO access(`Document`, `lastAccessDate`, `lastAccessTime`, `accessLocation`, `accessCount`, `byWhichTable`, `accessGrant`, `accessBy`, `situationId`,`situationType`) VALUES ('$filename', CURDATE(), CURTIME(), '$accessLocation2', $documentCount, 'prescription', 'Default', $FK, 0,'$situation2')";
+                            $result3 = mysqli_query($conn, $sql3);
                         
                             move_uploaded_file($tempfile, $folder);
                             echo"<div class='alert alert-success alert-dismissible fade show' role='alert'>
@@ -296,6 +319,8 @@ if(isset($_SESSION['Role'])){
                         <option value="MRI Report">MRI REPORT</option>
                         <option value="ECG">ECG</option>
                     </select>
+                    <br>
+                    <input type="text" class="form-control" placeholder="Enter Access Location" name="accessLocation2" aria-label=".form-control-lg example">
                     <br>
                     <input type="file" class="form-control" name="choosefile2" id="">
                     <div class="col-6 m-auto">

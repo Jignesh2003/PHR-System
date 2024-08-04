@@ -20,7 +20,7 @@
                     die();
                 }
                 if(isset($_SESSION['Role'])){
-                    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Doctor' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'doctor'){
+                    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Doctor' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'doctor' && $_SESSION['Role'] !='LabAssistant' && $_SESSION['Role'] !='Nurse'){
                         //if role is pharmacist then no access to dashboard
                         header("Location: ./prescription.php");
                     }
@@ -144,9 +144,15 @@
                                 <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold active" href="./prescription.php">PRESCRIPTION</a></li>
                                 
                         <?php    }
+                            elseif($_SESSION['Role'] == 'LabAssistant') { ?>
+                                <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold" href="./reports.php">REPORTS</a></li>
+                        <?php   }
+                            elseif($_SESSION['Role'] == 'Nurse' || $_SESSION['Role'] == 'nurse') {?>
+                                 <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold active" aria-current="page" href="./index.php">DASHBOARD</a> </li>
+                        <?php   }
                             else{ ?>
                                 <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold" href="#">MEDICLAIM DETAILS</a></li>
-                        <?php    }
+                        <?php   }
                         ?>
 
                         <?php if(!isset($_SESSION['isLogin'])) { ?>

@@ -103,6 +103,12 @@
                         elseif(($row['Role']=='Pharmacist'&& $situationType=='Pharmacist Shop Visit') || ($row['Role']=='pharmacist'&& $situationType=='Pharmacist Shop Visit')  ){
                             header("Location: ./prescription.php");
                         }
+                        elseif($row['Role']=='LabAssistant' && $situationType=='Lab Test'){
+                            header("Location: ./reports.php");
+                        }
+                        elseif($row['Role']=='Nurse' && $situationType=='First Time Visit'){
+                            header("Location: ./index.php");
+                        }
                         elseif($row['Role']=='Admin' || $row['Role']=='admin'){
                             header("Location: ./index.php");
                         }

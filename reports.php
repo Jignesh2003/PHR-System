@@ -12,7 +12,7 @@
                 $rr = 0; //role reliability
                 $ar = 0; //access reliability
                 $dc = 0; //document confidentiality
-                $ca = 0;
+                $ca = 0; //consent authority
 
             // Check connection
             if ($conn->connect_error) {
@@ -27,7 +27,7 @@
                 }
 
                 if(isset($_SESSION['Role'])){
-                    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Doctor' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'doctor'){
+                    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Doctor' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'doctor' && $_SESSION['Role'] != 'LabAssistant' && $_SESSION['Role'] != 'Nurse'){
                         //if role is pharmacist then no access to reports
                         header("Location: ./prescription.php");
                     }
@@ -144,16 +144,17 @@
                             $sr = 1;
                         }
 
-                        $sql4 = "INSERT INTO `main`(`Role`, `Name`, `SituationType`, `DocumentId`, `DocumentName`, `DocumentType`, `ByWhichTable`, `RBAC`, `documentConfidentiality`, `roleReliablity`, `situationReliablity`, `accessReliability`) VALUES('{$_SESSION['Role']}', '{$_SESSION['Name']}', '{$_SESSION['Situation']}', $id, '$documentName', '$documentType', '$tableName', 'Yes', $dc, $rr, $sr, $ar);";
-                        $result4 = $conn->query($sql4);
+                        $sql4 = "INSERT INTO `main`(`Role`, `Name`, `SituationType`, `DocumentId`, `DocumentName`, `DocumentType`, `ByWhichTable`, `RBAC`, `documentConfidentiality`, `roleReliablity`, `situationReliablity`, `accessReliability`, `consentAuthority`, `TF`, `RBAC_TF`) VALUES('{$_SESSION['Role']}', '{$_SESSION['Name']}', '{$_SESSION['Situation']}', $id, '$documentName', '$documentType', '$tableName', 'Yes', $dc, $rr, $sr, $ar,0,0,0);";
+                        $result4 = mysqli_query($conn,$sql4);
                         if (!$result4) {
                             echo "Error inserting in main table in result4 in reports: " . mysqli_error($conn);
                         }
 
                         $sql5 = "SELECT * FROM `main` order by `id` desc limit 1;";
-                        $result5 = $conn->query($sql5);
+                        $result5 = mysqli_query($conn,$sql5);
 
                         if($row= mysqli_fetch_assoc($result5)){
+                            //echo "inside row table:";
                             $rbac = $row['RBAC'];
                             $dc = $row['documentConfidentiality'];
                             $rr = $row['roleReliablity'];
@@ -162,7 +163,6 @@
                             $ca = $row['consentAuthority'];
                             $mainId = $row['id'];
                         }
-
                         //Calculating TF
                         if(($rbac=='Yes' && $dc==1 && $ca==1) || ($rbac=='Yes' && $dc==1 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='Yes' && $dc==1 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='Yes' && $dc==1 && $ca==0 && $rr==1 && $ar==1)){
                             $tf =1;
@@ -210,7 +210,7 @@
                         }
 
                         $sql6 = "UPDATE `main` SET `TF`=$tf ,`RBAC_TF`='$rbac_tf' WHERE `id`=$mainId;";
-                        $result6 = $conn->query($sql6);
+                        $result6 = mysqli_query($conn,$sql6);
 
 
                         
@@ -240,11 +240,12 @@
                         {
                             $sr = 1;
                         }
-                        $sql4 = "INSERT INTO `main`(`Role`, `Name`, `SituationType`, `DocumentId`, `DocumentName`, `DocumentType`, `ByWhichTable`, `RBAC`, `documentConfidentiality`, `roleReliablity`, `situationReliablity`, `accessReliability`) VALUES('{$_SESSION['Role']}', '{$_SESSION['Name']}', '{$_SESSION['Situation']}', $id, '$documentName', '$documentType', '$tableName', 'Yes', $dc, $rr, $sr, $ar);";
-                        $result4 = $conn->query($sql2);
+                        $sql4 = "INSERT INTO `main`(`Role`, `Name`, `SituationType`, `DocumentId`, `DocumentName`, `DocumentType`, `ByWhichTable`, `RBAC`, `documentConfidentiality`, `roleReliablity`, `situationReliablity`, `accessReliability`, `consentAuthority`, `TF`, `RBAC_TF`) VALUES('{$_SESSION['Role']}', '{$_SESSION['Name']}', '{$_SESSION['Situation']}', $id, '$documentName', '$documentType', '$tableName', 'Yes', $dc, $rr, $sr, $ar,0,0,0);";
+                        $result4 = mysqli_query($conn,$sql4);
                         if (!$result4) {
                             echo "Error inserting in main table in result4 in reports: " . mysqli_error($conn);
                         }
+
 
                         $sql5 = "SELECT * FROM `main` order by `id` desc limit 1;";
                         $result5 = $conn->query($sql5);
@@ -306,7 +307,80 @@
                         }
 
                         $sql6 = "UPDATE `main` SET `TF`=$tf ,`RBAC_TF`='$rbac_tf' WHERE `id`=$mainId;";
-                        $result6 = $conn->query($sql6);
+                        $result6 = mysqli_query($conn,$sql6);
+                    }
+                    elseif(($_SESSION['Role']=='Lab Assistant' && $_SESSION["Situation"]=='Lab Test')){
+
+                        $rr = 1;
+                        $ar=0;
+                        $sr=0;
+                        $sql4 = "INSERT INTO `main`(`Role`, `Name`, `SituationType`, `DocumentId`, `DocumentName`, `DocumentType`, `ByWhichTable`, `RBAC`, `documentConfidentiality`, `roleReliablity`, `situationReliablity`, `accessReliability`,`consentAuthority`,`TF`,`RBAC_TF`) VALUES('{$_SESSION['Role']}', '{$_SESSION['Name']}', '{$_SESSION['Situation']}', $id, '$documentName', '$documentType', '$tableName', 'Yes', $dc, $rr, $sr, $ar,0,0,0);";
+                        $result4 = $conn->query($sql4);
+                        if (!$result4) {
+                            echo "Error inserting in main table in result4 in reports: " . mysqli_error($conn);
+                        }
+
+                        $sql5 = "SELECT * FROM `main` order by `id` desc limit 1;";
+                        $result5 = mysqli_query($conn,$sql5);
+
+                        if($row= mysqli_fetch_assoc($result5)){
+                            $rbac = $row['RBAC'];
+                            $dc = $row['documentConfidentiality'];
+                            $rr = $row['roleReliablity'];
+                            $sr = $row['situationReliablity'];
+                            $ar = $row['accessReliability'];
+                            $ca = $row['consentAuthority'];
+                            $mainId = $row['id'];
+                        }
+
+                        //Calculating TF
+                        if(($rbac=='Yes' && $dc==1 && $ca==1) || ($rbac=='Yes' && $dc==1 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='Yes' && $dc==1 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='Yes' && $dc==1 && $ca==0 && $rr==1 && $ar==1)){
+                            $tf =1;
+
+                        }
+                        elseif(($rbac=='No' && $dc==1 && $ca==1)|| ($rbac=='No' && $dc==1 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='No' && $dc==1 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='No' && $dc==1 && $ca==0 && $rr==1 && $ar==1)){
+                            $tf = 1;
+                        }
+
+                        elseif(($rbac=='Yes' && $dc==2 && $ca==0) || ($rbac=='Yes' && $dc==2 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='Yes' && $dc==2 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='Yes' && $dc==2 && $ca==0 && $rr==1 && $ar==1)){
+                            $tf=1;
+                        }
+                        elseif(($rbac=='Yes' && $dc==2 && $ca==0) || ($rbac=='Yes' && $dc==2 && $ca==0 && $rr==2 && $sr==2) || ($rbac=='Yes' && $dc==2 && $ca==0 && $sr==2 && $ar==2) || ($rbac=='Yes' && $dc==2 && $ca==0 && $rr==2 && $ar==2)){
+                            $tf=1;
+                        }
+                        elseif(($rbac=='No' && $dc==2 && $ca==0) || ($rbac=='No' && $dc==2 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='No' && $dc==2 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='No' && $dc==2 && $ca==0 && $rr==1 && $ar==1)){
+                            $tf=1;
+                        }
+                        elseif(($rbac=='No' && $dc==2 && $ca==0) || ($rbac=='No' && $dc==2 && $ca==0 && $rr==2 && $sr==2) || ($rbac=='No' && $dc==2 && $ca==0 && $sr==2 && $ar==2) || ($rbac=='No' && $dc==2 && $ca==0 && $rr==2 && $ar==2)){
+                            $tf=1;
+                        }
+
+                        elseif(($rbac=='Yes' && $dc==3 && $ca==0) || ($rbac=='Yes' && $dc==3 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='Yes' && $dc==3 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='Yes' && $dc==3 && $ca==0 && $rr==1 && $ar==1)){
+                            $tf=1;
+                        }
+                        elseif(($rbac=='Yes' && $dc==3 && $ca==0) || ($rbac=='Yes' && $dc==3 && $ca==0 && $rr==2 && $sr==2) || ($rbac=='Yes' && $dc==3 && $ca==0 && $sr==2 && $ar==2) || ($rbac=='Yes' && $dc==3 && $ca==0 && $rr==2 && $ar==2) || ($rbac=='Yes' && $dc==3 && $ca==0 && $rr==1 && $ar==0 && $sr==0)){
+                            $tf=1;
+                        }
+                        elseif(($rbac=='No' && $dc==3 && $ca==0) || ($rbac=='No' && $dc==3 && $ca==0 && $rr==1 && $sr==1) || ($rbac=='No' && $dc==3 && $ca==0 && $sr==1 && $ar==1) || ($rbac=='No' && $dc==3 && $ca==0 && $rr==1 && $ar==1)){
+                            $tf=1;
+                        }
+                        elseif(($rbac=='No' && $dc==3 && $ca==0) || ($rbac=='No' && $dc==3 && $ca==0 && $rr==2 && $sr==2) || ($rbac=='No' && $dc==3 && $ca==0 && $sr==2 && $ar==2) || ($rbac=='No' && $dc==3 && $ca==0 && $rr==2 && $ar==2)){
+                            $tf=1;
+                        }
+                        else{
+                            $tf = 0;
+                        }
+
+                        if($tf == 1)
+                        {
+                            $rbac_tf="Yes";
+                        }
+                        else{
+                            $rbac_tf="No";
+                        }
+
+                        $sql6 = "UPDATE `main` SET `TF`=$tf ,`RBAC_TF`='$rbac_tf' WHERE `id`=$mainId;";
+                        $result6 = mysqli_query($conn,$sql6);
                     }
                     else{
                         ?>
@@ -400,8 +474,15 @@
                             elseif($_SESSION['Role'] == 'Pharmacist' || $_SESSION['Role'] == 'pharmacist') { ?>
                         <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold active"
                                 href="./prescription.php">PRESCRIPTION</a></li>
-
                         <?php    }
+                            elseif($_SESSION['Role'] == 'LabAssistant') { ?>
+                                <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold active"
+                                href="./reports.php">REPORTS</a></li>
+                        <?php   }
+                            elseif($_SESSION['Role'] == 'Nurse'){ ?>
+                                <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold" aria-current="page"
+                                href="./index.php">DASHBOARD</a> </li>
+                        <?php   }
                             else{ ?>
                         <li class="nav-item"> <a class="nav-link pe-3 me-4 fw-bold" href="#">MEDICLAIM DETAILS</a></li>
                         <?php   }

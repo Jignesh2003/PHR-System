@@ -27,8 +27,8 @@
                 }
                 if(isset($_SESSION['Role'])){
                     
-                    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Pharmacist' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'pharmacist'){
-                        //if role is doctor then no access to prescription
+                    if($_SESSION['Role'] != 'Admin' && $_SESSION['Role'] != 'Pharmacist' && $_SESSION['Role'] != 'admin' && $_SESSION['Role'] != 'pharmacist' && $_SESSION['Role']!='Nurse'){
+                        //if role is doctor, LabAssistant then no access to prescription
                         header("Location: ./index.php");
                     }
 
